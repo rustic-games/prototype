@@ -1,0 +1,35 @@
+[package]
+name = "rkt"
+version = "0.1.0"
+authors = ["Jean Mertz <jean@mertz.fm>"]
+edition = "2018"
+
+[features]
+default = ["metal"]
+metal = ["gfx-backend-metal"]
+# dx12 = ["gfx-backend-dx12"]
+# vulkan = ["gfx-backend-vulkan"]
+
+[dependencies]
+gfx-hal = "0.2"
+arrayvec = "0.4"
+winit = "0.19"
+
+[dependencies.log]
+version = "0.4"
+
+[dependencies.env_logger]
+version = "0.6"
+default-features = false
+
+[target.'cfg(target_os = "macos")'.dependencies.gfx-backend-metal]
+version = "0.2"
+optional = true
+
+# [dependencies.gfx-backend-vulkan]
+# version = "0.2"
+# optional = true
+
+# [target.'cfg(windows)'.dependencies.gfx-backend-dx12]
+# version = "0.2"
+# optional = true
