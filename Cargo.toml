@@ -4,6 +4,9 @@ version = "0.1.0"
 authors = ["Jean Mertz <jean@mertz.fm>"]
 edition = "2018"
 
+[workspace]
+members = ["lib/game-loop"]
+
 [features]
 default = ["metal"]
 metal = ["gfx-backend-metal"]
@@ -14,6 +17,7 @@ metal = ["gfx-backend-metal"]
 gfx-hal = "0.2"
 arrayvec = "0.4"
 winit = "0.19"
+game-loop = { path = "lib/game-loop" }
 
 [dependencies.log]
 version = "0.4"

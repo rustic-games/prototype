@@ -1,0 +1,13 @@
+[package]
+name = "game-loop"
+version = "0.1.0"
+authors = ["Jean Mertz <jean@mertz.fm>"]
+license = "MIT OR Apache-2.0"
+description = "Game Loop library."
+repository = "https://github.com/rustic-games/loop"
+keywords = ["game", "rkt"]
+categories = ["game-engine"]
+readme = "README.md"
+edition = "2018"
+
+[dependencies]

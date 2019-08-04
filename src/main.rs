@@ -1,5 +1,8 @@
 #![allow(clippy::len_zero)]
 
+mod error;
+mod state;
+
 #[allow(unused_imports)]
 use log::{debug, error, info, trace, warn};
 
@@ -12,6 +15,7 @@ use gfx_backend_vulkan as back;
 
 use arrayvec::ArrayVec;
 use core::mem::ManuallyDrop;
+use game_loop::GameLoop;
 use gfx_hal::{
     adapter::{Adapter, PhysicalDevice},
     command::{ClearColor, ClearValue, CommandBuffer, MultiShot, Primary},
@@ -519,7 +523,14 @@ fn main() {
         mouse_y: 0.0,
     };
 
+    let state = crate::state::GameState::default();
+    let mut game_loop = GameLoop::new(state);
+
     loop {
+        if let Err(err) = game_loop.tick() {
+            error!("Game Loop Error: {:?}", err);
+        }
+
         let inputs = UserInput::poll_events_loop(&mut winit_state.events_loop);
         if inputs.end_requested {
             break;
