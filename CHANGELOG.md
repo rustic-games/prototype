@@ -8,8 +8,8 @@ Versioning]. The file is auto-generated using [Conventional Commits].
 ## Overview
 
 - [**Unreleased**](#unreleased)
-- _2019-08-05_ [**`0.2.0`**](#020)
-- _2019-08-02_ [**`0.1.0`**](#010)
+- _2019.08.05_ [**`0.2.0`**](#020)
+- _2019.08.02_ [**`0.1.0`**](#010)
 
 ## [Unreleased]
 
@@ -17,7 +17,7 @@ _nothing new to show for… yet!_
 
 ## [0.2.0]
 
-- date: 2019-08-05
+- date: 2019.08.05
 - name: GFX Tutorial, Part II
 
 ### Description
@@ -75,7 +75,7 @@ documentation, tests, performance improvements, refactoring, code styling._
 
 ## [0.1.0]
 
-- date: 2019-08-02
+- date: 2019.08.02
 - name: GFX Tutorial, Part I
 
 ### Description
