@@ -48,7 +48,8 @@ greatly appreciated by the community. ❤️
 
 - **"Learn gfx-hal" chapter 4** [d4c4880]
 
-  This implements the fourth chapter of the "Learn gfx-hal" tutorial[0].
+  This implements the fourth chapter of the "Learn gfx-hal"
+  tutorial[0][0.2.0 feat 1 0].
 
   Some take-aways:
 
@@ -56,15 +57,10 @@ greatly appreciated by the community. ❤️
     code. But, having fun going through the courses.
 
   - Updating the code to use gfx-hal 0.2, contributing the changes back
-    upstream[1].
+    upstream[1][0.2.0 feat 1 1].
 
-  - Also ordered a book[2], and started reading a free online book[3] to
-    brush up on the required knowledge.
-
-  [0]: https://lokathor.github.io/learn-gfx-hal/
-  [1]: https://github.com/Lokathor/learn-gfx-hal/pull/86
-  [2]: https://www.goodreads.com/book/show/43299232
-  [3]: https://paroj.github.io/gltut/index.html
+  - Also ordered a book[2][0.2.0 feat 1 2], and started reading a free online
+    book[3][0.2.0 feat 1 3] to brush up on the required knowledge.
 
 #### _Unchanged_
 
@@ -102,24 +98,21 @@ greatly appreciated by the community. ❤️
 
 - **"Learn gfx-hal" chapters 1, 2 & 3** [fa74d27]
 
-  This implements the first three chapters of the "Learn gfx-hal" tutorial[0].
+  This implements the first three chapters of the "Learn gfx-hal"
+  tutorial[0][0.1.0 feat 0 0].
 
   Some take-aways:
 
   - `gfx-hal` is low-level, requiring lots of boilerplate code. It will be
     interesting to see the difference once we start migrating the code to
-    the `Rendy`[1] crate.
+    the `Rendy`[1][0.1.0 feat 0 1] crate.
 
   - Lots of unsafe code required.
 
-  - The `winit`[2] crate is reasonably heavy, providing platform support that
-    isn't relevant to the game (at least not yet).
+  - The `winit`[2][0.1.0 feat 0 2] crate is reasonably heavy, providing platform
+    support that isn't relevant to the game (at least not yet).
 
   - Both crates are still young, lots of moving targets.
-
-  [0]: lokathor.github.io/learn-gfx-hal
-  [1]: rustgd/rendy
-  [2]: rust-windowing/winit
 
 #### _Unchanged_
 
@@ -139,6 +132,7 @@ documentation, tests, performance improvements, refactoring, code styling._
 <!-- [commits] -->
 
 [07ebc32]: https://github.com/rustic-games/prototype/commit/07ebc32158a31df795ea4bd05588e39c1ced1fef
+[d4c4880]: https://github.com/rustic-games/prototype/commit/d4c4880c5e090cb46996680f174035120c4b6f1d
 [fa74d27]: https://github.com/rustic-games/prototype/commit/fa74d27da60e78f4a8c85b86a4a431ccf7b43210
 
 <!-- [references] -->
@@ -147,3 +141,10 @@ documentation, tests, performance improvements, refactoring, code styling._
 [keep a changelog]: https://keepachangelog.com/en/1.0.0/
 [semantic versioning]: https://semver.org/spec/v2.0.0.html
 [conventional commits]: https://www.conventionalcommits.org/en/v1.0.0-beta.4/
+[0.2.0 feat 1 0]: https://lokathor.github.io/learn-gfx-hal/
+[0.2.0 feat 1 1]: https://github.com/Lokathor/learn-gfx-hal/pull/86
+[0.2.0 feat 1 2]: https://www.goodreads.com/book/show/43299232
+[0.2.0 feat 1 3]: https://paroj.github.io/gltut/index.html
+[0.1.0 feat 0 0]: https://lokathor.github.io/learn-gfx-hal/
+[0.1.0 feat 0 1]: https://github.com/rustgd/rendy
+[0.1.0 feat 0 2]: https://github.com/rust-windowing/winit
