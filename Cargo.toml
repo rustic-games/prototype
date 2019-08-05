@@ -17,6 +17,7 @@ metal = ["gfx-backend-metal"]
 gfx-hal = "0.2"
 arrayvec = "0.4"
 winit = "0.19"
+shaderc = "0.3"
 game-loop = { path = "lib/game-loop" }
 
 [dependencies.log]
