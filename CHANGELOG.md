@@ -5,6 +5,12 @@ All notable changes to **[Rusty Rockets]** are documented in this file.
 The format is based on [Keep a Changelog], and this project adheres to [Semantic
 Versioning]. The file is auto-generated using [Conventional Commits].
 
+## Overview
+
+- [**Unreleased**](#unreleased)
+- [**0.2.0**](#020) (2019-08-05)
+- [**0.1.0**](#010) (2019-08-02)
+
 ## [Unreleased]
 
 _nothing new to show for… yet!_
