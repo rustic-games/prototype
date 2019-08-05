@@ -8,8 +8,8 @@ Versioning]. The file is auto-generated using [Conventional Commits].
 ## Overview
 
 - [**Unreleased**](#unreleased)
-- [**0.2.0**](#020) (2019-08-05)
-- [**0.1.0**](#010) (2019-08-02)
+- _2019-08-05_ [**`0.2.0`**](#020)
+- _2019-08-02_ [**`0.1.0`**](#010)
 
 ## [Unreleased]
 
