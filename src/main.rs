@@ -29,15 +29,17 @@ use gfx_hal::{
     pool::{CommandPool, CommandPoolCreateFlags},
     pso::{
         AttributeDesc, BakedStates, BasePipeline, BlendDesc, BlendOp, BlendState, ColorBlendDesc,
-        ColorMask, DepthStencilDesc, DepthTest, DescriptorSetLayoutBinding, Element, EntryPoint,
-        Face, Factor, FrontFace, GraphicsPipelineDesc, GraphicsShaderSet, InputAssemblerDesc,
-        LogicOp, PipelineCreationFlags, PipelineStage, PolygonMode, Rasterizer, Rect,
-        ShaderStageFlags, Specialization, StencilTest, VertexBufferDesc, VertexInputRate, Viewport,
+        ColorMask, DepthStencilDesc, DepthTest, DescriptorSetLayoutBinding, ElemOffset, ElemStride,
+        Element, EntryPoint, Face, Factor, FrontFace, GraphicsPipelineDesc, GraphicsShaderSet,
+        InputAssemblerDesc, LogicOp, PipelineCreationFlags, PipelineStage, PolygonMode, Rasterizer,
+        Rect, ShaderStageFlags, Specialization, StencilTest, VertexBufferDesc, VertexInputRate,
+        Viewport,
     },
     queue::{family::QueueGroup, Submission},
     window::{Extent2D, PresentMode, Swapchain, SwapchainConfig},
     Backend, Features, Gpu, Graphics, Instance, Primitive, QueueFamily, Surface,
 };
+use std::time::Instant;
 use winit::{
     dpi::LogicalSize, CreationError, Event, EventsLoop, Window, WindowBuilder, WindowEvent,
 };
@@ -46,22 +48,32 @@ pub const WINDOW_NAME: &str = "Hello Rusty Rockets";
 
 pub const VERTEX_SOURCE: &str = "#version 450
 layout (location = 0) in vec2 position;
+layout (location = 1) in vec3 color;
 
-out gl_PerVertex {
+layout (location = 0) out gl_PerVertex {
   vec4 gl_Position;
 };
+layout (location = 1) out vec3 frag_color;
 
 void main()
 {
   gl_Position = vec4(position, 0.0, 1.0);
+  frag_color = color;
 }";
 
 pub const FRAGMENT_SOURCE: &str = "#version 450
-layout(location = 0) out vec4 color;
+layout (push_constant) uniform PushConsts {
+  float time;
+} push;
+
+layout (location = 1) in vec3 frag_color;
+
+layout (location = 0) out vec4 color;
 
 void main()
 {
-  color = vec4(1.0);
+  float time01 = -0.9 * abs(sin(push.time * 0.9)) + 0.9;
+  color = vec4(frag_color,1.0) * vec4(time01,time01,time01,1.0);
 }";
 
 #[derive(Debug, Clone, Copy)]
@@ -73,9 +85,18 @@ impl Triangle {
         let [[a, b], [c, d], [e, f]] = self.points;
         [a, b, c, d, e, f]
     }
+    pub fn vertex_attributes(self) -> [f32; 3 * (2 + 3)] {
+        let [[a, b], [c, d], [e, f]] = self.points;
+        [
+            a, b, 1.0, 0.0, 0.0, // red
+            c, d, 0.0, 1.0, 0.0, // green
+            e, f, 0.0, 0.0, 1.0, // blue
+        ]
+    }
 }
 
 pub struct HalState {
+    creation_instant: Instant,
     buffer: ManuallyDrop<<back::Backend as Backend>::Buffer>,
     memory: ManuallyDrop<<back::Backend as Backend>::Memory>,
     descriptor_set_layouts: Vec<<back::Backend as Backend>::DescriptorSetLayout>,
@@ -149,12 +170,10 @@ impl HalState {
         let (swapchain, extent, images, format, frames_in_flight) = {
             let (caps, preferred_formats, present_modes) =
                 surface.compatibility(&adapter.physical_device);
-
             info!("{:?}", caps);
             info!("Preferred Formats: {:?}", preferred_formats);
             info!("Present Modes: {:?}", present_modes);
             info!("Composite Alphas: {:?}", caps.composite_alpha);
-
             //
             let present_mode = {
                 use gfx_hal::window::PresentMode::*;
@@ -347,9 +366,9 @@ impl HalState {
         let (descriptor_set_layouts, pipeline_layout, graphics_pipeline) =
             Self::create_pipeline(&mut device, extent, &render_pass)?;
         let (buffer, memory, requirements) = unsafe {
-            const F32_XY_TRIANGLE: u64 = (size_of::<f32>() * 2 * 3) as u64;
+            const F32_XY_RGB_TRIANGLE: u64 = (size_of::<f32>() * (2 + 3) * 3) as u64;
             let mut buffer = device
-                .create_buffer(F32_XY_TRIANGLE, BufferUsage::VERTEX)
+                .create_buffer(F32_XY_RGB_TRIANGLE, BufferUsage::VERTEX)
                 .map_err(|_| "Couldn't create a buffer for the vertices")?;
             let requirements = device.get_buffer_requirements(&buffer);
             let memory_type_id = adapter
@@ -374,6 +393,7 @@ impl HalState {
         };
 
         Ok(Self {
+            creation_instant: Instant::now(),
             requirements,
             buffer: ManuallyDrop::new(buffer),
             memory: ManuallyDrop::new(memory),
@@ -422,7 +442,10 @@ impl HalState {
                 "main",
                 None,
             )
-            .map_err(|_| "Couldn't compile vertex shader!")?;
+            .map_err(|e| {
+                error!("{}", e);
+                "Couldn't compile vertex shader!"
+            })?;
         let fragment_compile_artifact = compiler
             .compile_into_spirv(
                 FRAGMENT_SOURCE,
@@ -470,17 +493,26 @@ impl HalState {
 
             let vertex_buffers: Vec<VertexBufferDesc> = vec![VertexBufferDesc {
                 binding: 0,
-                stride: (size_of::<f32>() * 2) as u32,
+                stride: (size_of::<f32>() * 5) as ElemStride,
                 rate: VertexInputRate::Vertex,
             }];
-            let attributes: Vec<AttributeDesc> = vec![AttributeDesc {
+            let position_attribute = AttributeDesc {
                 location: 0,
                 binding: 0,
                 element: Element {
                     format: Format::Rg32Sfloat,
                     offset: 0,
                 },
-            }];
+            };
+            let color_attribute = AttributeDesc {
+                location: 1,
+                binding: 0,
+                element: Element {
+                    format: Format::Rgb32Sfloat,
+                    offset: (size_of::<f32>() * 2) as ElemOffset,
+                },
+            };
+            let attributes: Vec<AttributeDesc> = vec![position_attribute, color_attribute];
 
             let rasterizer = Rasterizer {
                 depth_clamping: false,
@@ -532,7 +564,7 @@ impl HalState {
                         .create_descriptor_set_layout(bindings, immutable_samplers)
                         .map_err(|_| "Couldn't make a DescriptorSetLayout")?
                 }];
-            let push_constants = Vec::<(ShaderStageFlags, core::ops::Range<u32>)>::new();
+            let push_constants = vec![(ShaderStageFlags::FRAGMENT, 0..1)];
             let layout = unsafe {
                 device
                     .create_pipeline_layout(&descriptor_set_layouts, push_constants)
@@ -560,9 +592,10 @@ impl HalState {
                 };
 
                 unsafe {
-                    device
-                        .create_graphics_pipeline(&desc, None)
-                        .map_err(|_| "Couldn't create a graphics pipeline!")?
+                    device.create_graphics_pipeline(&desc, None).map_err(|e| {
+                        error!("{}", e);
+                        "Couldn't create a graphics pipeline!"
+                    })?
                 }
             };
 
@@ -670,12 +703,16 @@ impl HalState {
                 .device
                 .acquire_mapping_writer(&self.memory, 0..self.requirements.size)
                 .map_err(|_| "Failed to acquire a memory writer!")?;
-            let points = triangle.points_flat();
-            data_target[..points.len()].copy_from_slice(&points);
+            let data = triangle.vertex_attributes();
+            data_target[..data.len()].copy_from_slice(&data);
             self.device
                 .release_mapping_writer(data_target)
                 .map_err(|_| "Couldn't release the mapping writer!")?;
         }
+
+        // DETERMINE THE TIME DATA
+        let duration = Instant::now().duration_since(self.creation_instant);
+        let time_f32 = duration.as_secs() as f32 + duration.subsec_nanos() as f32 * 1e-9;
 
         // RECORD COMMANDS
         unsafe {
@@ -695,6 +732,12 @@ impl HalState {
                 let buffer_ref: &<back::Backend as Backend>::Buffer = &self.buffer;
                 let buffers: ArrayVec<[_; 1]> = [(buffer_ref, 0)].into();
                 encoder.bind_vertex_buffers(0, buffers);
+                encoder.push_graphics_constants(
+                    &self.pipeline_layout,
+                    ShaderStageFlags::FRAGMENT,
+                    0,
+                    &[time_f32.to_bits()],
+                );
                 encoder.draw(0..3, 0..1);
             }
             buffer.finish();
@@ -722,6 +765,7 @@ impl HalState {
         }
     }
 }
+
 impl core::ops::Drop for HalState {
     /// We have to clean up "leaf" elements before "root" elements. Basically, we
     /// clean up in reverse of the order that we created things.
@@ -775,6 +819,7 @@ pub struct WinitState {
     pub events_loop: EventsLoop,
     pub window: Window,
 }
+
 impl WinitState {
     /// Constructs a new `EventsLoop` and `Window` pair.
     ///
@@ -793,6 +838,7 @@ impl WinitState {
         })
     }
 }
+
 impl Default for WinitState {
     /// Makes an 800x600 window with the `WINDOW_NAME` value as the title.
     /// ## Panics
@@ -815,6 +861,7 @@ pub struct UserInput {
     pub new_frame_size: Option<(f64, f64)>,
     pub new_mouse_position: Option<(f64, f64)>,
 }
+
 impl UserInput {
     pub fn poll_events_loop(events_loop: &mut EventsLoop) -> Self {
         let mut output = UserInput::default();
@@ -848,6 +895,7 @@ pub struct LocalState {
     pub mouse_x: f64,
     pub mouse_y: f64,
 }
+
 impl LocalState {
     pub fn update_from_input(&mut self, input: UserInput) {
         if let Some(frame_size) = input.new_frame_size {
